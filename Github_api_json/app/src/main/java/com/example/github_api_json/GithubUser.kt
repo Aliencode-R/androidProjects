@@ -1,3 +1,3 @@
 package com.example.github_api_json
 
-data class GithubUser(val login : String, val id : Int, val url : String, val score : Double)
+data class GithubUser(val login : String, val id : Int, val html_url : String, val score : Double, val avatar_url : String)

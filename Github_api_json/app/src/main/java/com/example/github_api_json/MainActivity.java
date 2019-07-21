@@ -8,7 +8,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import com.google.gson.Gson;
+
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,86 +25,142 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 public class MainActivity extends AppCompatActivity {
 
-    Button btnGetData;
-    EditText etName;
-    RecyclerView recyclerView;
+    private static final String TAG = "MainActivity";
+
+    // https://github.com/abhishekbanthia/Public-APIs
+    // discover more api here
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Button button = findViewById(R.id.btn);
+        final EditText etName = findViewById(R.id.etName);
 
-        btnGetData = findViewById(R.id.btnGetData);
-        etName = findViewById(R.id.etName);
-        recyclerView = findViewById(R.id.recyclerView);
-
-        btnGetData.setOnClickListener(new View.OnClickListener() {
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String name = etName.getText().toString();
-                NetworkTask networkTask = new NetworkTask();
-                networkTask.execute("https://api.github.com/search/users?q=" + name);
+                try {
+                    makeNetworkCall("https://api.github.com/search/users?q=" + name);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+    }
+
+
+
+    void makeNetworkCall(String url) throws IOException {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                //Show a toast
+                Toast.makeText(MainActivity.this, "Error !!! ", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                //This method does not run on the Main Thread
+                String result = response.body().string();
+//                ArrayList<GithubUser> users = parseJson(result);
+                Gson gson = new Gson();
+                ApiResult apiResult = gson.fromJson(result, ApiResult.class);
+
+                final GithubUserAdapter githubUserAdapter = new GithubUserAdapter(apiResult.getItems());
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Code here runs on the Main thread
+                        RecyclerView recyclerView = findViewById(R.id.rvUsers);
+                        recyclerView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                        recyclerView.setAdapter(githubUserAdapter);
+                    }
+                });
             }
         });
     }
 
-    class NetworkTask extends AsyncTask<String,Void,String> {
-
-        @Override
-        protected String doInBackground(String... strings) {
-            String link = strings[0];
-            try {
-                URL url = new URL(link);
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                InputStream inputStream = httpURLConnection.getInputStream();
-                Scanner scanner = new Scanner(inputStream);
-                scanner.useDelimiter("\\A");
-                if(scanner.hasNext())
-                {
-                    String data = scanner.next();
-                    return data;
-                }
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return "Fail to load !!!";
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            ArrayList<GithubUser> users = parseJson(s);
-            recyclerView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
-            GithubUserAdapter githubUserAdapter = new GithubUserAdapter(users);
-            recyclerView.setAdapter(githubUserAdapter);
-        }
-    }
-    ArrayList<GithubUser> parseJson(String s) {
-        ArrayList<GithubUser> githubUsers = new ArrayList<>();
-
-        try {
-            JSONObject jsonObject = new JSONObject(s);
-            JSONArray jsonArray = jsonObject.getJSONArray("items");
-            for(int i = 0; i < jsonArray.length(); i++){
-                JSONObject object = jsonArray.getJSONObject(i);
-                String login = object.getString("login");
-                Integer id = object.getInt("id");
-                Double score = object.getDouble("score");
-                String url = object.getString("url");
-
-                GithubUser githubUser = new GithubUser(login,id,url,score);
-                githubUsers.add(githubUser);
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return githubUsers;
-    }
-
+//    class NetworkTask extends AsyncTask<String, Void, String> {
+//
+//        @Override
+//        protected String doInBackground(String... strings) {
+//            String stringUrl = strings[0];
+//
+//            try {
+//                URL url = new URL(stringUrl);
+//
+//                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+//
+//                InputStream inputStream = httpURLConnection.getInputStream();
+//
+//                Scanner scanner = new Scanner(inputStream);
+//
+//                scanner.useDelimiter("\\A");
+//
+//                if (scanner.hasNext()) {
+//                    String s = scanner.next();
+//                    return s;
+//                }
+//
+//            } catch (MalformedURLException e) {
+//                e.printStackTrace();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//            return "Failed to load";
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String s) {
+//            super.onPostExecute(s);
+//            ArrayList<GithubUser> users = parseJson(s);
+//            GithubUserAdapter githubUserAdapter = new GithubUserAdapter(users);
+//            RecyclerView recyclerView = findViewById(R.id.rvUsers);
+//            recyclerView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+//            recyclerView.setAdapter(githubUserAdapter);
+//        }
+//    }
+//
+//    ArrayList<GithubUser> parseJson(String s) {
+//        ArrayList<GithubUser> githubUsers = new ArrayList<>();
+//
+//        //Parse the json
+//        try {
+//            JSONObject root = new JSONObject(s);
+//            JSONArray items = root.getJSONArray("items");
+//
+//            for (int i = 0; i < items.length(); i++) {
+//                JSONObject object = items.getJSONObject(i);
+//                String login = object.getString("login");
+//                Integer id = object.getInt("id");
+//                String avatar = object.getString("avatar_url");
+//                Double score = object.getDouble("score");
+//                String html = object.getString("html_url");
+//                GithubUser githubUser = new GithubUser(login, id, html, score, avatar);
+//                githubUsers.add(githubUser);
+//            }
+//
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return githubUsers;
+//    }
 
 }
