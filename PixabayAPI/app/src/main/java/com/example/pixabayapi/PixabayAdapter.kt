@@ -31,10 +31,7 @@ class PixabayAdapter(val mcontext : Context, private val pixabayList : ArrayList
         fun bind(pixabayUser : PixabayUser){
 
             itemView.tvCreator.text = pixabayUser.user
-            itemView.tvLikes.text = "Likes : " +
-
-                    pixabayUser.likes.toString()
-            //Picasso.get().load(pixabayUser.LargeImageURL).into(itemView.ivImage)
+            itemView.tvLikes.text = "Likes : " + pixabayUser.likes.toString()
             Picasso.get().load(pixabayUser.largeImageURL).fit().centerInside().into(itemView.ivImage)
         }
     }

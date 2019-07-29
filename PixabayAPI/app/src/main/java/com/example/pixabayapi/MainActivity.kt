@@ -19,9 +19,16 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         recyclerView.layoutManager = LinearLayoutManager(this)
-        val url = "https://pixabay.com/api/?key=5303976-fd6581ad4ac165d1b75cc15b3&q=kitten&image_type=photo&pretty=true"
+        //val url = "https://pixabay.com/api/?key=5303976-fd6581ad4ac165d1b75cc15b3&q=kitten&image_type=photo&pretty=true"
+        btnSearch.setOnClickListener{
+            val data = etData.text.toString()
+            val url = "https://pixabay.com/api/?key=5303976-fd6581ad4ac165d1b75cc15b3&q=" +
+                    data +
+                    "&image_type=photo&pretty=true"
+            fetchJson(url)
+        }
 
-        fetchJson(url)
+
     }
 
      fun fetchJson(url : String){
