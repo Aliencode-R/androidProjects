@@ -9,22 +9,28 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#DCB4E4">
+        android:background="#696969"
+        android:paddingTop="10dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingBottom="10dp">
 
         <EditText
             android:id="@+id/etData"
             android:layout_width="0dp"
-            android:layout_height="37dp"
+            android:layout_height="match_parent"
             android:layout_weight="3"
             android:paddingLeft="5dp"
-            android:background="#00CE3939" />
+            android:background="#DCDCDC"
+            android:hint="Type to search"/>
 
         <Button
             android:id="@+id/btnSearch"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="#BA94C4"
+            android:translationZ="20dp"
+            android:background="@android:color/holo_red_light"
             android:text="Search" />
     </LinearLayout>
 
@@ -33,6 +39,6 @@
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="48dp"
-        android:background="#64286D" />
+        android:layout_marginTop="67dp"
+        android:background="#696969" />
 </RelativeLayout>

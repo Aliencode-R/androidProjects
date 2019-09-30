@@ -13,6 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:background="#DCDCDC"
         android:padding="16dp">
 
         <ImageView
@@ -33,7 +34,8 @@
             android:id="@+id/tvLikes"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Like: " />
+            android:text="Like: "
+            android:textColor="@android:color/holo_green_dark"/>
 
     </LinearLayout>
 
